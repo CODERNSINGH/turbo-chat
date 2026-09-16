@@ -1,0 +1,41 @@
+{
+  "name": "turbo-chat",
+  "version": "1.0.0",
+  "description": "A simple, lightweight real-time CLI chat application powered by Socket.io and PostgreSQL",
+  "main": "bin/turbo-chat.js",
+  "type": "module",
+  "bin": {
+    "turbo-chat": "./bin/turbo-chat.js"
+  },
+  "scripts": {
+    "start": "node bin/turbo-chat.js",
+    "server": "node server/index.js",
+    "dev:server": "node --watch server/index.js",
+    "test": "node test-e2e.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    "README.md"
+  ],
+  "keywords": [
+    "chat",
+    "cli",
+    "socketio",
+    "terminal",
+    "realtime"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "chalk": "^5.4.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "inquirer": "^9.3.7",
+    "pg": "^8.13.3",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1"
+  }
+}
