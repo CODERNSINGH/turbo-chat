@@ -1,123 +1,125 @@
-# ⚡ Turbo-Chat
+# Forktrix-Chat
 
-A simple, lightweight CLI real-time chat application powered by **Node.js**, **Express**, **Socket.io**, and **PostgreSQL**.
-
-Built as a college final-year project: clean, readable, and without unnecessary over-engineering.
+A lightweight CLI real-time chat application powered by Node.js, Express, Socket.io, and PostgreSQL.
 
 ---
 
-## 🌟 Features
+## Overview
 
-- **Terminal-First UX**: Pure CLI experience with interactive menus using `inquirer` and colored status output with `chalk`.
-- **Real-Time Messaging**: Instant WebSocket broadcasting with `socket.io`.
-- **Persistent Rooms**: Room names and bcrypt-hashed passwords stored in PostgreSQL (Neon DB).
-- **Zero Chat History Overhead**: Messages are live-only (in-memory broadcasting) — lightweight and fast.
-- **Graceful In-Chat Typing**: Incoming messages don't break or overwrite your typing prompt.
-- **Easy Room Commands**: Type `/exit` anytime to leave a room.
+Forktrix-Chat provides a terminal-based messaging experience with room-based isolation and WebSocket communication. Rooms and bcrypt-hashed passwords are persisted in PostgreSQL, while live messages are broadcast directly to connected clients with low latency.
 
 ---
 
-## 🏗️ Architecture
+## Features
+
+- Terminal-First User Interface: Interactive menus powered by inquirer.
+- Real-Time Messaging: Instant WebSocket communication via Socket.io.
+- Persistent Room Storage: Room credentials hashed with bcrypt and stored in PostgreSQL.
+- Ephemeral Message Delivery: Chat messages are broadcast in real time and not stored in the database.
+- Non-Disruptive Typing: Terminal input line is preserved when new messages arrive.
+- Single Command Execution: Install via npm or execute directly with npx.
+
+---
+
+## Architecture
 
 ```
-┌─────────────────────┐          ┌──────────────────────┐          ┌────────────────┐
-│  Terminal Client A   │◄────────►│                       │          │                │
-│  (turbo-chat CLI)   │  Socket  │   Node.js Server      │◄────────►│   PostgreSQL   │
-└─────────────────────┘   .io     │   (Express + Socket.io│  pg lib  │   (rooms table)│
-┌─────────────────────┐  events   │    running on Render) │          │                │
-│  Terminal Client B   │◄────────►│                       │          │                │
-│  (turbo-chat CLI)   │          └──────────────────────┘          └────────────────┘
-└─────────────────────┘
+┌─────────────────────────┐          ┌──────────────────────┐          ┌────────────────┐
+│   Terminal Client A     │◄────────►│                      │          │                │
+│   (forktrix-chat CLI)   │  Socket  │   Node.js Server     │◄────────►│   PostgreSQL   │
+└─────────────────────────┘   .io    │   (Express + Socket) │  pg lib  │   (rooms table)│
+┌─────────────────────────┐  events  │                      │          │                │
+│   Terminal Client B     │◄────────►│                      │          │                │
+│   (forktrix-chat CLI)   │          └──────────────────────┘          └────────────────┘
+└─────────────────────────┘
 ```
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
-turbo-chat/
+forktrix-chat/
 ├── bin/
-│   └── turbo-chat.js     # Executable CLI entry point (#!/usr/bin/env node)
+│   └── forktrix-chat.js   # CLI entry point
 ├── src/
-│   ├── config.js         # Configuration (Server URL resolution)
-│   ├── socket.js         # Socket.io-client connection manager
-│   ├── menu.js           # Interactive Inquirer menus (Create / Join flow)
-│   └── chat.js           # Readline live chat loop & message formatting
+│   ├── config.js          # Resolves target server URL
+│   ├── socket.js          # Socket.io client connection manager
+│   ├── menu.js            # Interactive menus for creating and joining rooms
+│   └── chat.js            # Terminal chat interface and message loop
 ├── server/
-│   ├── db.js             # PostgreSQL pool, schema initialization, and queries
-│   └── index.js          # Express + Socket.io server & event handling
-├── .env                  # PostgreSQL DATABASE_URL & PORT (not committed)
-├── .env.example          # Example environment variables
-├── package.json          # Root package definition (includes "bin" configuration)
+│   ├── db.js              # PostgreSQL connection pool and schema
+│   └── index.js           # Server application and socket event listeners
+├── package.json           # Package metadata and binary definitions
 └── README.md
 ```
 
 ---
 
-## 🚀 Getting Started
+## Quick Start
 
-### 1. Prerequisites
-- **Node.js** (v18 or higher recommended)
-- **PostgreSQL** (e.g. Neon PostgreSQL connection string)
+### Run Instantly with npx
+```bash
+npx forktrix-chat
+```
 
-### 2. Install Dependencies
+### Install Globally
+```bash
+npm install -g forktrix-chat
+forktrix-chat
+```
+
+### Connecting to a Specific Server
+```bash
+forktrix-chat --server https://your-server.onrender.com
+```
+
+---
+
+## Development
+
+### 1. Install Dependencies
 ```bash
 npm install
 ```
 
-### 3. Configure Database
-Copy `.env.example` to `.env` (or configure your Neon DB URL):
+### 2. Configure Environment
+Create a `.env` file in the root directory:
 ```env
-DATABASE_URL=postgresql://user:password@your-host.neon.tech/neondb?sslmode=require
+DATABASE_URL=postgresql://user:password@host:port/dbname?sslmode=require
 PORT=3000
 ```
 
-### 4. Start Backend Server
+### 3. Start Backend Server
 ```bash
 npm run server
 ```
-The server will automatically connect to Postgres and ensure the `rooms` table is created.
 
-### 5. Start CLI Chat Client
-In a new terminal window:
+### 4. Run CLI Client Locally
 ```bash
 npm start
-```
-Or run the binary directly:
-```bash
-./bin/turbo-chat.js
+# or
+node bin/forktrix-chat.js
 ```
 
-To connect to a custom server (e.g., deployed server on Render):
+### 5. Run Test Suite
 ```bash
-./bin/turbo-chat.js --server https://your-server.onrender.com
-# OR
-SERVER_URL=https://your-server.onrender.com npm start
+npm test
 ```
 
 ---
 
-## 📦 Global NPM Installation (Optional)
+## Socket.io Events
 
-To install globally on your machine:
-```bash
-npm install -g .
-turbo-chat
-```
-
----
-
-## 🔌 Socket.io Events Reference
-
-| Event Name | Direction | Payload | Description |
+| Event | Direction | Payload | Description |
 |---|---|---|---|
-| `list_rooms` | Client ➔ Server | *(none)* | Requests list of existing room names |
-| `room_list` | Server ➔ Client | `[roomName, ...]` | Returns array of room names |
-| `create_room` | Client ➔ Server | `{ roomName, password, username }` | Hashes password, saves room in DB, joins user |
-| `join_room` | Client ➔ Server | `{ roomName, password, username }` | Validates password against DB hash, joins user |
-| `room_joined` | Server ➔ Client | `{ roomName, username }` | Confirms user joined the room |
-| `user_joined` | Server ➔ Broadcast | `{ username }` | Notifies others that user joined |
-| `send_message` | Client ➔ Server | `{ roomName, username, text }` | Sends chat message |
-| `receive_message`| Server ➔ Broadcast | `{ username, text, timestamp }` | Delivers chat message to everyone in room |
-| `user_left` | Server ➔ Broadcast | `{ username }` | Notifies room members when user disconnects |
-| `error` | Server ➔ Client | `{ message }` | Sends error notification to client |
+| list_rooms | Client to Server | None | Requests list of available rooms |
+| room_list | Server to Client | string[] | Returns array of room names |
+| create_room | Client to Server | { roomName, password, username } | Creates a room and joins user |
+| join_room | Client to Server | { roomName, password, username } | Validates password and joins user |
+| room_joined | Server to Client | { roomName, username } | Confirms successful entry into room |
+| user_joined | Server to Broadcast | { username } | Notifies participants of a new user |
+| send_message | Client to Server | { roomName, username, text } | Transmits chat message |
+| receive_message | Server to Broadcast | { username, text, timestamp } | Delivers message to room participants |
+| user_left | Server to Broadcast | { username } | Notifies participants when user disconnects |
+| error | Server to Client | { message } | Returns error message |

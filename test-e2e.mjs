@@ -109,13 +109,13 @@ async function runEndToEndTest() {
   client2.emit("send_message", {
     roomName: testRoom,
     username: "Bob",
-    text: "Hey Alice, this is turbo-chat!",
+    text: "Hey Alice, this is forktrix-chat!",
   });
 
   const [aliceMsg, bobMsg] = await Promise.all([aliceMsgPromise, bobMsgPromise]);
   console.log("Alice received:", aliceMsg);
   console.log("Bob received:", bobMsg);
-  if (aliceMsg.text !== "Hey Alice, this is turbo-chat!") {
+  if (aliceMsg.text !== "Hey Alice, this is forktrix-chat!") {
     throw new Error("Test 5 Failed: Message text mismatch.");
   }
   console.log("Test 5 Passed: Instant message broadcast verified.");

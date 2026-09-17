@@ -10,13 +10,14 @@ async function main() {
   console.log(
     chalk.cyanBright(`
 ======================================================
-  _____ _   _ ____  ____   ___         ____ _   _    _  _____ 
- |_   _| | | |  _ \\| __ ) / _ \\       / ___| | | |  / \\|_   _|
-   | | | | | | |_) |  _ \\| | | |_____| |   | |_| | / _ \\ | |  
-   | | | |_| |  _ <| |_) | |_| |_____| |___|  _  |/ ___ \\| |  
-   |_|  \\___/|_| \\_\\____/ \\___/       \\____|_| |_/_/   \\_\\_|  
-                                                              
-        Fast, Lightweight Real-Time Terminal Chat
+  ______ ____  _____  _  _______ _____  _______   __
+ |  ____/ __ \\|  __ \\| |/ /__   __|  __ \\|_   _\\ \\ / /
+ | |__ | |  | | |__) | ' /   | |  | |__) | | |  \\ V / 
+ |  __|| |  | |  _  /|  <    | |  |  _  /  | |   > <  
+ | |   | |__| | | \\ \\| . \\   | |  | | \\ \\ _| |_ / . \\ 
+ |_|    \\____/|_|  \\_\\_|\\_\\  |_|  |_|  \\_\\_____/_/ \\_\\
+                                                     
+         FORKTRIX-CHAT | Terminal Chat System
 ======================================================
     `)
   );
@@ -25,14 +26,14 @@ async function main() {
 
   try {
     const socket = await connectSocket();
-    console.log(chalk.green("Connected successfully to Turbo-Chat server!\n"));
+    console.log(chalk.green("Connected successfully to Forktrix-Chat server.\n"));
 
     await showMainMenu(socket);
   } catch (err) {
-    console.error(chalk.red(`\n✖ Connection Error:\n${err.message}\n`));
+    console.error(chalk.red(`\n[Connection Error]\n${err.message}\n`));
     console.log(
       chalk.yellow(
-        "Tip: Make sure the server is started with 'npm run server' or supply '--server <url>'.\n"
+        "Tip: Ensure the server is running or specify a server URL using '--server <url>'.\n"
       )
     );
     process.exit(1);

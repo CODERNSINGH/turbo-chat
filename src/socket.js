@@ -5,7 +5,7 @@ import { SERVER_URL } from "./config.js";
 let socketInstance = null;
 
 /**
- * Initializes and establishes connection to the Turbo-Chat server.
+ * Initializes and establishes connection to the Forktrix-Chat server.
  * @returns {Promise<import("socket.io-client").Socket>}
  */
 export function connectSocket() {
@@ -30,7 +30,7 @@ export function connectSocket() {
     socket.once("connect_error", (err) => {
       reject(
         new Error(
-          `Unable to connect to Turbo-Chat server at ${SERVER_URL}.\n` +
+          `Unable to connect to Forktrix-Chat server at ${SERVER_URL}.\n` +
           `Please verify that the server is running.\nDetails: ${err.message}`
         )
       );

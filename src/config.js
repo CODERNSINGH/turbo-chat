@@ -11,4 +11,4 @@ function getServerUrlFromArgs() {
 export const SERVER_URL =
   getServerUrlFromArgs() ||
   process.env.SERVER_URL ||
-  "http://localhost:3000";
+  "https://turbo-chat-2wuy.onrender.com";

@@ -1,14 +1,15 @@
 {
-  "name": "turbo-chat",
+  "name": "forktrix-chat",
   "version": "1.0.0",
-  "description": "A simple, lightweight real-time CLI chat application powered by Socket.io and PostgreSQL",
-  "main": "bin/turbo-chat.js",
+  "description": "A lightweight real-time CLI chat application powered by Socket.io and PostgreSQL",
+  "main": "bin/forktrix-chat.js",
   "type": "module",
   "bin": {
-    "turbo-chat": "./bin/turbo-chat.js"
+    "forktrix-chat": "bin/forktrix-chat.js",
+    "forktrix": "bin/forktrix-chat.js"
   },
   "scripts": {
-    "start": "node bin/turbo-chat.js",
+    "start": "node bin/forktrix-chat.js",
     "server": "node server/index.js",
     "dev:server": "node --watch server/index.js",
     "test": "node test-e2e.mjs"

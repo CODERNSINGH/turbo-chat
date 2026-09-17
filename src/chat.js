@@ -14,7 +14,7 @@ export function startChat(socket, roomName, username) {
     console.log(
       chalk.bold.cyan(
         "\n======================================================\n" +
-        `  ⚡ TURBO-CHAT  |  Room: ${chalk.yellow(roomName)}\n` +
+        `  FORKTRIX-CHAT  |  Room: ${chalk.yellow(roomName)}\n` +
         `  Logged in as: ${chalk.green(username)}\n` +
         `  Commands: Type ${chalk.magenta("/exit")} to leave the room.\n` +
         "======================================================\n"

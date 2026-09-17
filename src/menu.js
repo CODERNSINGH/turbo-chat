@@ -15,11 +15,11 @@ export async function showMainMenu(socket) {
       {
         type: "list",
         name: "action",
-        message: "What do you want to do?",
+        message: "Select an option:",
         choices: [
-          { name: "⚡ Create Room", value: "create" },
-          { name: "🔑 Join Room", value: "join" },
-          { name: "❌ Exit", value: "exit" },
+          { name: "Create Room", value: "create" },
+          { name: "Join Room", value: "join" },
+          { name: "Exit", value: "exit" },
         ],
       },
     ]);
@@ -29,7 +29,7 @@ export async function showMainMenu(socket) {
     } else if (action === "join") {
       await handleJoinRoom(socket);
     } else if (action === "exit") {
-      console.log(chalk.cyan("\nGoodbye! Thanks for using Turbo-Chat.\n"));
+      console.log(chalk.cyan("\nExiting Forktrix-Chat. Goodbye.\n"));
       socket.disconnect();
       running = false;
       process.exit(0);
@@ -102,7 +102,7 @@ async function handleCreateRoom(socket) {
   });
 
   if (!result.success) {
-    console.log(chalk.red(`\n✖ Error: ${result.message}`));
+    console.log(chalk.red(`\n[Error] ${result.message}`));
     return;
   }
 
@@ -127,11 +127,11 @@ async function handleJoinRoom(socket) {
   });
 
   if (!rooms || rooms.length === 0) {
-    console.log(chalk.yellow("\n⚠️  No rooms are currently available. Create one first!\n"));
+    console.log(chalk.yellow("\n[Notice] No rooms are currently available. Create one first.\n"));
     return;
   }
 
-  const roomChoices = [...rooms, new inquirer.Separator(), "🔙 [Back to Main Menu]"];
+  const roomChoices = [...rooms, new inquirer.Separator(), "[Back to Main Menu]"];
 
   const { selectedRoom } = await inquirer.prompt([
     {
@@ -142,7 +142,7 @@ async function handleJoinRoom(socket) {
     },
   ]);
 
-  if (selectedRoom === "🔙 [Back to Main Menu]") {
+  if (selectedRoom === "[Back to Main Menu]") {
     return;
   }
 
@@ -194,7 +194,7 @@ async function handleJoinRoom(socket) {
   });
 
   if (!result.success) {
-    console.log(chalk.red(`\n✖ Error: ${result.message}`));
+    console.log(chalk.red(`\n[Error] ${result.message}`));
     return;
   }
 
