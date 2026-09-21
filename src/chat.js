@@ -92,9 +92,19 @@ export function startChat(socket, roomName, username) {
         return;
       }
 
+      if (trimmed === "/info") {
+        safeLog(chalk.cyan("\nRoom Information:"));
+        safeLog(chalk.gray(`  Room Name:    ${chalk.white(roomName)}`));
+        safeLog(chalk.gray(`  Your Name:    ${chalk.white(username)}`));
+        safeLog(chalk.gray(`  Connected:    ${chalk.green("Yes")}\n`));
+        rl.prompt();
+        return;
+      }
+
       if (trimmed === "/help") {
         safeLog(chalk.cyan("\nAvailable Commands:"));
         safeLog(chalk.cyan("  /clear - Clear the terminal screen"));
+        safeLog(chalk.cyan("  /info  - Show current room information"));
         safeLog(chalk.cyan("  /help  - Show available commands"));
         safeLog(chalk.cyan("  /exit  - Leave the chat room\n"));
         rl.prompt();
