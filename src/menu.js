@@ -46,6 +46,7 @@ async function handleCreateRoom(socket) {
       type: "input",
       name: "roomName",
       message: "Enter room name:",
+      filter: (val) => val.trim(),
       validate: (val) => {
         const trimmed = val.trim();
         if (!trimmed) return "Room name cannot be empty.";
@@ -67,6 +68,7 @@ async function handleCreateRoom(socket) {
       type: "input",
       name: "username",
       message: "Enter your display name:",
+      filter: (val) => val.trim(),
       validate: (val) => {
         const trimmed = val.trim();
         if (!trimmed) return "Display name cannot be empty.";
@@ -161,6 +163,7 @@ async function handleJoinRoom(socket) {
       type: "input",
       name: "username",
       message: "Enter your display name:",
+      filter: (val) => val.trim(),
       validate: (val) => {
         const trimmed = val.trim();
         if (!trimmed) return "Display name cannot be empty.";
