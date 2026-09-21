@@ -28,7 +28,7 @@ export function startChat(socket, roomName, username) {
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
-      prompt: chalk.bold.cyan("You > "),
+      prompt: chalk.bold.cyan(`[${roomName}] You > `),
     });
 
     // Helper to log without disturbing the current typing prompt
