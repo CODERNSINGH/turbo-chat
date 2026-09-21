@@ -10,16 +10,20 @@ import chalk from "chalk";
  */
 export function startChat(socket, roomName, username) {
   return new Promise((resolve) => {
-    console.clear();
-    console.log(
-      chalk.bold.cyan(
-        "\n======================================================\n" +
-        `  FORKTRIX-CHAT  |  Room: ${chalk.yellow(roomName)}\n` +
-        `  Logged in as: ${chalk.green(username)}\n` +
-        `  Commands: Type ${chalk.magenta("/help")} for commands, ${chalk.magenta("/exit")} to leave.\n` +
-        "======================================================\n"
-      )
-    );
+    function printBanner() {
+      console.clear();
+      console.log(
+        chalk.bold.cyan(
+          "\n======================================================\n" +
+          `  FORKTRIX-CHAT  |  Room: ${chalk.yellow(roomName)}\n` +
+          `  Logged in as: ${chalk.green(username)}\n` +
+          `  Commands: Type ${chalk.magenta("/help")} for commands, ${chalk.magenta("/exit")} to leave.\n` +
+          "======================================================\n"
+        )
+      );
+    }
+
+    printBanner();
 
     const rl = readline.createInterface({
       input: process.stdin,
@@ -82,8 +86,15 @@ export function startChat(socket, roomName, username) {
         return;
       }
 
+      if (trimmed === "/clear") {
+        printBanner();
+        rl.prompt();
+        return;
+      }
+
       if (trimmed === "/help") {
         safeLog(chalk.cyan("\nAvailable Commands:"));
+        safeLog(chalk.cyan("  /clear - Clear the terminal screen"));
         safeLog(chalk.cyan("  /help  - Show available commands"));
         safeLog(chalk.cyan("  /exit  - Leave the chat room\n"));
         rl.prompt();
