@@ -22,7 +22,7 @@ async function main() {
     `)
   );
 
-  console.log(chalk.gray(`Target Server: ${SERVER_URL}`));
+  console.log(chalk.gray(`Version: 1.0.0 | Target: ${SERVER_URL}`));
 
   try {
     const socket = await connectSocket();
