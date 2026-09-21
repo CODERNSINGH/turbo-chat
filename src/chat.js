@@ -16,7 +16,7 @@ export function startChat(socket, roomName, username) {
         "\n======================================================\n" +
         `  FORKTRIX-CHAT  |  Room: ${chalk.yellow(roomName)}\n` +
         `  Logged in as: ${chalk.green(username)}\n` +
-        `  Commands: Type ${chalk.magenta("/exit")} to leave the room.\n` +
+        `  Commands: Type ${chalk.magenta("/help")} for commands, ${chalk.magenta("/exit")} to leave.\n` +
         "======================================================\n"
       )
     );
@@ -79,6 +79,14 @@ export function startChat(socket, roomName, username) {
         cleanup();
         rl.close();
         resolve();
+        return;
+      }
+
+      if (trimmed === "/help") {
+        safeLog(chalk.cyan("\nAvailable Commands:"));
+        safeLog(chalk.cyan("  /help  - Show available commands"));
+        safeLog(chalk.cyan("  /exit  - Leave the chat room\n"));
+        rl.prompt();
         return;
       }
 
