@@ -76,6 +76,17 @@ forktrix-chat --server https://your-server.onrender.com
 
 ---
 
+## In-Chat Commands
+
+| Command | Description |
+|---|---|
+| `/help` | Display list of available commands |
+| `/clear` | Clear terminal screen and redraw header |
+| `/info` | Display current room name and status |
+| `/exit` | Leave the chat room and return to menu |
+
+---
+
 ## Development
 
 ### 1. Install Dependencies
