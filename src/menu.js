@@ -109,7 +109,7 @@ async function handleCreateRoom(socket) {
   }
 
   // Successfully joined room
-  await startChat(socket, result.data.roomName, result.data.username);
+  await startChat(socket, result.data.roomName, result.data.username, password);
 }
 
 /**
@@ -202,5 +202,5 @@ async function handleJoinRoom(socket) {
   }
 
   // Successfully joined room
-  await startChat(socket, result.data.roomName, result.data.username);
+  await startChat(socket, result.data.roomName, result.data.username, details.password);
 }
