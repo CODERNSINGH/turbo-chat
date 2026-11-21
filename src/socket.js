@@ -17,8 +17,6 @@ export function connectSocket() {
     console.log(chalk.gray(`Connecting to server at ${SERVER_URL}...`));
 
     const socket = io(SERVER_URL, {
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
       timeout: 30000,
       transports: ["websocket", "polling"],
     });

@@ -6,10 +6,9 @@ import chalk from "chalk";
  * @param {import("socket.io-client").Socket} socket
  * @param {string} roomName
  * @param {string} username
- * @param {string} password used to silently rejoin the room after a reconnect
  * @returns {Promise<void>}
  */
-export function startChat(socket, roomName, username, password) {
+export function startChat(socket, roomName, username) {
   return new Promise((resolve) => {
     function printBanner() {
       console.clear();
@@ -67,22 +66,12 @@ export function startChat(socket, roomName, username, password) {
       safeLog(chalk.dim(`  <-- ${chalk.bold(leftUser)} left the room.`));
     };
 
-    // Join the room again (the server forgets us when the connection drops)
-    const rejoin = () => {
-      socket.emit("join_room", { roomName, password, username });
-    };
-
-    const onConnect = () => {
-      safeLog(chalk.green("  Reconnected."));
-      rejoin();
-    };
-
     const onDisconnect = () => {
-      safeLog(chalk.red("  Connection lost. Reconnecting..."));
+      safeLog(chalk.red("  Connection lost. Please /exit and join the room again."));
     };
 
     const onNotInRoom = () => {
-      rejoin();
+      safeLog(chalk.red("  You are not in the room anymore. Please /exit and join again."));
     };
 
     const onError = ({ message }) => {
@@ -90,7 +79,6 @@ export function startChat(socket, roomName, username, password) {
     };
 
     // Attach listeners
-    socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
     socket.on("not_in_room", onNotInRoom);
     socket.on("error", onError);
@@ -139,16 +127,7 @@ export function startChat(socket, roomName, username, password) {
       }
 
       if (trimmed.length > 0) {
-        if (!socket.connected) {
-          safeLog(chalk.red("  Not connected. Message not sent."));
-        } else {
-          // The server confirms delivery; if it lost our room we rejoin and retry once
-          socket.timeout(5000).emit("send_message", { text: trimmed }, (err, res) => {
-            if (!err && res && res.ok) return;
-            rejoin();
-            setTimeout(() => socket.emit("send_message", { text: trimmed }), 1000);
-          });
-        }
+        socket.emit("send_message", { text: trimmed });
       }
 
       rl.prompt();
@@ -162,7 +141,6 @@ export function startChat(socket, roomName, username, password) {
 
     function cleanup() {
       socket.emit("leave_room");
-      socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
       socket.off("not_in_room", onNotInRoom);
       socket.off("error", onError);
