@@ -134,3 +134,7 @@ npm test
 | receive_message | Server to Broadcast | { username, text, timestamp } | Delivers message to room participants |
 | user_left | Server to Broadcast | { username } | Notifies participants when user disconnects |
 | error | Server to Client | { message } | Returns error message |
+
+## Deployment note
+
+The server pings its own `/health` endpoint every 14 minutes so Render does not put it to sleep. Set `RENDER_EXTERNAL_URL` if your service URL differs from the default.
