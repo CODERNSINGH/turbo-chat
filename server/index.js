@@ -25,6 +25,8 @@ const io = new Server(server, {
     origin: "*",
     methods: ["GET", "POST"],
   },
+  pingInterval: 10000,
+  pingTimeout: 20000,
 });
 
 const PORT = process.env.PORT || 3000;
@@ -47,6 +49,47 @@ app.get("/", (req, res) => {
 app.get("/health", (req, res) => {
   res.json({ status: "healthy" });
 });
+
+// Render free tier sleeps after 15 min idle, so ping ourselves every 14 min
+const KEEP_ALIVE_MS = 14 * 60 * 1000;
+const SELF_URL = process.env.RENDER_EXTERNAL_URL || "https://turbo-chat-2wuy.onrender.com";
+
+function startKeepAlive() {
+  setInterval(async () => {
+    try {
+      const res = await fetch(`${SELF_URL}/health`);
+      console.log(`[Keep-Alive] ping ${res.status}`);
+    } catch (err) {
+      console.error("[Keep-Alive] ping failed:", err.message);
+    }
+  }, KEEP_ALIVE_MS);
+}
+
+// Remove a socket from the in-memory room state
+function removeUser(socketId) {
+  const session = socketRoomMap[socketId];
+  if (!session) return null;
+  delete socketRoomMap[socketId];
+  const { roomName } = session;
+  if (activeUsers[roomName]) {
+    activeUsers[roomName] = activeUsers[roomName].filter((u) => u.socketId !== socketId);
+    if (activeUsers[roomName].length === 0) delete activeUsers[roomName];
+  }
+  return session;
+}
+
+// Add a socket to a room (leaves any previous room first)
+function addUser(socket, roomName, username) {
+  const previous = removeUser(socket.id);
+  if (previous) {
+    socket.leave(previous.roomName);
+    socket.to(previous.roomName).emit("user_left", { username: previous.username });
+  }
+  socket.join(roomName);
+  if (!activeUsers[roomName]) activeUsers[roomName] = [];
+  activeUsers[roomName].push({ socketId: socket.id, username });
+  socketRoomMap[socket.id] = { roomName, username };
+}
 
 // Socket.io event handling
 io.on("connection", (socket) => {
@@ -86,12 +129,7 @@ io.on("connection", (socket) => {
       // Hash password and store in PostgreSQL
       await createRoom(trimmedName, password);
 
-      // Join the socket room
-      socket.join(trimmedName);
-
-      // Track user in memory
-      activeUsers[trimmedName] = [{ socketId: socket.id, username: trimmedUser }];
-      socketRoomMap[socket.id] = { roomName: trimmedName, username: trimmedUser };
+      addUser(socket, trimmedName, trimmedUser);
 
       console.log(`[Room Created] "${trimmedName}" by ${trimmedUser}`);
       socket.emit("room_joined", {
@@ -100,7 +138,12 @@ io.on("connection", (socket) => {
       });
     } catch (err) {
       console.error("Error creating room:", err.message);
-      socket.emit("error", { message: "Failed to create room. Please try again." });
+      // 23505 = unique violation (two people made the same room at once)
+      const message =
+        err.code === "23505"
+          ? "That room name was just taken. Please choose a different name."
+          : "Failed to create room. Please try again.";
+      socket.emit("error", { message });
     }
   });
 
@@ -132,15 +175,10 @@ io.on("connection", (socket) => {
         });
       }
 
-      // Join socket.io room
-      socket.join(trimmedName);
-
-      // Track user in memory
-      if (!activeUsers[trimmedName]) {
-        activeUsers[trimmedName] = [];
-      }
-      activeUsers[trimmedName].push({ socketId: socket.id, username: trimmedUser });
-      socketRoomMap[socket.id] = { roomName: trimmedName, username: trimmedUser };
+      // A silent rejoin after a reconnect should not announce the user again
+      const previous = socketRoomMap[socket.id];
+      const isRejoin = previous && previous.roomName === trimmedName;
+      if (!isRejoin) addUser(socket, trimmedName, trimmedUser);
 
       console.log(`[User Joined] ${trimmedUser} joined "${trimmedName}"`);
 
@@ -150,10 +188,9 @@ io.on("connection", (socket) => {
         username: trimmedUser,
       });
 
-      // Broadcast to other users in the room
-      socket.to(trimmedName).emit("user_joined", {
-        username: trimmedUser,
-      });
+      if (!isRejoin) {
+        socket.to(trimmedName).emit("user_joined", { username: trimmedUser });
+      }
     } catch (err) {
       console.error("Error joining room:", err.message);
       socket.emit("error", { message: "Failed to join room. Please try again." });
@@ -161,39 +198,40 @@ io.on("connection", (socket) => {
   });
 
   // 4. Send and broadcast message
-  socket.on("send_message", ({ roomName, username, text }) => {
-    if (!roomName || !text || !text.trim()) return;
+  socket.on("send_message", ({ text } = {}, ack) => {
+    const reply = typeof ack === "function" ? ack : () => {};
+    const session = socketRoomMap[socket.id];
 
-    const messagePayload = {
-      username: username || "Anonymous",
-      text: text.trim(),
+    // Socket lost its room (e.g. after a reconnect): tell the client to rejoin
+    if (!session) {
+      socket.emit("not_in_room");
+      return reply({ ok: false });
+    }
+    if (typeof text !== "string" || !text.trim()) return reply({ ok: false });
+
+    io.to(session.roomName).emit("receive_message", {
+      username: session.username,
+      text: text.trim().slice(0, 2000),
       timestamp: new Date().toISOString(),
-    };
+    });
+    reply({ ok: true });
+  });
 
-    // Broadcast to everyone in the room (including sender)
-    io.to(roomName).emit("receive_message", messagePayload);
+  // Client left the room but stays connected
+  socket.on("leave_room", () => {
+    const session = removeUser(socket.id);
+    if (!session) return;
+    socket.leave(session.roomName);
+    socket.to(session.roomName).emit("user_left", { username: session.username });
   });
 
   // 5. Disconnect handling
   socket.on("disconnect", () => {
     console.log(`[Socket Disconnected] ID: ${socket.id}`);
-    const userSession = socketRoomMap[socket.id];
-    if (userSession) {
-      const { roomName, username } = userSession;
-      delete socketRoomMap[socket.id];
-
-      if (activeUsers[roomName]) {
-        activeUsers[roomName] = activeUsers[roomName].filter(
-          (u) => u.socketId !== socket.id
-        );
-        if (activeUsers[roomName].length === 0) {
-          delete activeUsers[roomName];
-        }
-      }
-
-      // Notify other members of the room
-      socket.to(roomName).emit("user_left", { username });
-      console.log(`[User Left] ${username} left "${roomName}"`);
+    const session = removeUser(socket.id);
+    if (session) {
+      socket.to(session.roomName).emit("user_left", { username: session.username });
+      console.log(`[User Left] ${session.username} left "${session.roomName}"`);
     }
   });
 });
@@ -206,6 +244,7 @@ initDb()
       console.log(`  Turbo-Chat Server running on port ${PORT}`);
       console.log(`  Health check: http://localhost:${PORT}/health`);
       console.log(`========================================`);
+      startKeepAlive();
     });
   })
   .catch((err) => {
