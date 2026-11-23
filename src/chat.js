@@ -127,7 +127,7 @@ export function startChat(socket, roomName, username) {
       }
 
       if (trimmed.length > 0) {
-        socket.emit("send_message", { text: trimmed });
+        socket.emit("send_message", { roomName, username, text: trimmed });
       }
 
       rl.prompt();
