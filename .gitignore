@@ -1,3 +1,15 @@
 node_modules/
 .env
 .DS_Store
+
+# Logs
+npm-debug.log*
+*.log
+
+# Env variants
+.env.*
+!.env.example
+
+# Editor
+.vscode/
+.idea/
