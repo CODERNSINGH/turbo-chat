@@ -1,6 +1,6 @@
 {
   "name": "forktrix-chat",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A lightweight real-time CLI chat application powered by Socket.io and PostgreSQL",
   "main": "bin/forktrix-chat.js",
   "type": "module",
